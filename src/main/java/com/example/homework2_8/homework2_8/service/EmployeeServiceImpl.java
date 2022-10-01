@@ -4,39 +4,44 @@ import com.example.homework2_8.homework2_8.Employee;
 import com.sun.tools.jconsole.JConsoleContext;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class EmployeeServiceImpl implements EmployeeService{
+public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeServiceImpl() {
         this.employeeList = new ArrayList<>();
     }
 
     private List<Employee> employeeList;
+
     public Employee add(String surname, String name, String secondName, int department, float salary) {
         Employee employee = new Employee(surname, name, secondName, department, salary);
-        employeeList.add(employee);
-        return employee;
+        Set<String> set = employeeList.stream().map(e->e.getFullName())
+                        .collect(Collectors.toSet());
+        if (set.contains(employee.getFullName())) {
+            throw new RuntimeException("Такой сотрудник " + employee.getFullName() + " уже есть");
+        }else{
+            employeeList.add(employee);
+            return employee;
+        }
     }
 
     @Override
     public Optional<Employee> getEmployeeMaxSalaryByDep(int departmentId) {
-        return employeeList.stream().filter(e->e.getDepartment() == departmentId)
+        return employeeList.stream().filter(e -> e.getDepartment() == departmentId)
                 .max(Comparator.comparingDouble(employee -> employee.getSalary()));
     }
 
     @Override
     public Optional<Employee> getEmployeeMinSalaryByDep(int departmentId) {
-        return employeeList.stream().filter(e->e.getDepartment() == departmentId)
+        return employeeList.stream().filter(e -> e.getDepartment() == departmentId)
                 .min(Comparator.comparingDouble(employee -> employee.getSalary()));
     }
+
     @Override
     public List<Employee> getAllEmployees() {
-        return employeeList.stream().sorted(Comparator.comparingInt(e->e.getDepartment()))
+        return employeeList.stream().sorted(Comparator.comparingInt(e -> e.getDepartment()))
                 .collect(Collectors.toList());
     }
 
@@ -44,8 +49,8 @@ public class EmployeeServiceImpl implements EmployeeService{
     public List<Employee> getAllEmployeesByDepartment(int departmentId) {
         if (departmentId == -1) {
             return getAllEmployees();
-        }else {
-            return employeeList.stream().filter(e->e.getDepartment() == departmentId)
+        } else {
+            return employeeList.stream().filter(e -> e.getDepartment() == departmentId)
                     .collect(Collectors.toList());
         }
     }
